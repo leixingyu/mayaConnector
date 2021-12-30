@@ -1,3 +1,8 @@
+"""
+Module to setup callback for streaming from Maya's (the client) side
+"""
+
+
 import errno
 import socket
 from cStringIO import StringIO
@@ -21,6 +26,11 @@ client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 
 def open_stream(addr=(SERVER, PORT)):
+    """
+    Add callback to stream output of script editor when changed
+
+    :param addr: tuple. ip address and port number
+    """
     global STREAM_CALLBACK
     print("Streaming ScriptEditor at ({}:{})\n".format(addr[0], addr[1]))
     STREAM_CALLBACK = om.MCommandMessage.addCommandOutputCallback(
@@ -30,6 +40,9 @@ def open_stream(addr=(SERVER, PORT)):
 
 
 def close_stream():
+    """
+    Remove callback to stream output of script editor
+    """
     global STREAM_CALLBACK
     print("Disable Streaming ScriptEditor\n")
     om.MMessage.removeCallback(STREAM_CALLBACK)
@@ -37,6 +50,14 @@ def close_stream():
 
 
 def stream_to_console(msg, mtype, addr):
+    """
+    Stream result of the callback back to the listen server
+    https://github.com/justinfx/MayaSublime/
+
+    :param msg: str. MEL command being executed (i.e. callback output)
+    :param mtype: OpenMaya.MMessage.MessageType. type of the message
+    :param addr: tuple. ip address and port number
+    """
     buf = StringIO()
     buf.seek(0)
     buf.truncate()
