@@ -30,7 +30,8 @@ COMMAND_ADDR = (SERVER, COMMAND_PORT)
 ADDR = (SERVER, PORT)
 
 MODULE_PATH = os.path.dirname(os.path.abspath(__file__))
-UI_PATH = os.path.join(MODULE_PATH, 'logger.ui')
+MODULE_NAME = os.path.basename(MODULE_PATH)
+UI_PATH = os.path.join(MODULE_PATH, 'ui', 'connector.ui')
 
 
 def send_command(command):
@@ -41,8 +42,8 @@ def send_command(command):
     """
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client.connect(COMMAND_ADDR)
-    # the command from external editor to maya
-    command = 'python("{}")'.format(command)
+    # this resolves the mixed quotation conflicts
+    command = 'python("' + command.replace(r'"', r'\"') + '")'
 
     client.send(command)
     client.close()
@@ -52,10 +53,10 @@ def open_stream():
     """
     Send command to Maya to open output streaming
     """
-    command = "import sys; " \
-              "sys.path.append({}); " \
-              "from {} import streamer; " \
-              "streamer.open_stream()".format(MODULE_PATH, MODULE_PATH)
+    command = r"import sys; " \
+              r"sys.path.append('{}'); " \
+              r"from {} import streamer; " \
+              r"streamer.open_stream()".format(MODULE_PATH, MODULE_NAME)
     send_command(command)
 
 
@@ -67,9 +68,9 @@ def close_stream():
     send_command(command)
 
 
-class MayaLogger(QtWidgets.QMainWindow):
+class MayaConnector(QtWidgets.QMainWindow):
     """
-    Maya Logger Main Interface
+    Maya Connector Main Interface
     """
     server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     server.bind(ADDR)
@@ -81,13 +82,13 @@ class MayaLogger(QtWidgets.QMainWindow):
         """
         Initialization
         """
-        super(MayaLogger, self).__init__(parent)
+        super(MayaConnector, self).__init__(parent)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         _loadUi(UI_PATH, self)
 
         self.ui_connect_btn.clicked.connect(self.handle_connect)
         self.ui_disconnect_btn.clicked.connect(self.handle_disconnect)
-        self.ui_run_btn.clicked.connect(self.execute)
+        self.ui_run_all_btn.clicked.connect(self.execute)
 
     def closeEvent(self, event):
         """
@@ -95,13 +96,14 @@ class MayaLogger(QtWidgets.QMainWindow):
         """
         self.handle_disconnect()
         self.server.close()
-        super(MayaLogger, self).closeEvent(event)
+        super(MayaConnector, self).closeEvent(event)
 
     def execute(self):
         """
         Send command in script area for maya to execute
         """
-        command = self.ui_script_edit.text()
+        command = self.ui_script_edit.toPlainText()
+        command = str(command).encode("string-escape")
         send_command(command)
 
     def handle_connect(self):
@@ -120,13 +122,13 @@ class MayaLogger(QtWidgets.QMainWindow):
         if self.is_running:
             self.is_running = False
             close_stream()
-            print('Logger no longer listening')
+            print('Connector no longer listening')
 
     def start_listen(self):
         """
         Start listening to Maya's streaming port and display the return message
         """
-        print("Logger up and listening")
+        print("Connector up and listening")
         while True:
             if not self.is_running:
                 break
@@ -141,6 +143,6 @@ class MayaLogger(QtWidgets.QMainWindow):
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
 
-    win = MayaLogger()
+    win = MayaConnector()
     win.show()
     sys.exit(app.exec_())
