@@ -1,148 +1,60 @@
-"""
-Module for setting up the listen server which sends command to
-Maya's command port, and also actively listens to Maya's return message
-from callback.
-
-Requirement:
-needs Maya to open a command port first, run it before connecting or
-put it in the setup file for startup.
-
-import maya.cmds as cmds
-if not cmds.commandPort(":5050", query=True):
-    cmds.commandPort(name=":5050")
-"""
-
-
-import os
 import socket
-import sys
 import threading
 
-from Qt import QtWidgets, QtCore
-from Qt import _loadUi
+import util
 
 
 PORT = 5051
-COMMAND_PORT = 5050
 SERVER = "127.0.0.1"
-
-COMMAND_ADDR = (SERVER, COMMAND_PORT)
 ADDR = (SERVER, PORT)
 
-MODULE_PATH = os.path.dirname(os.path.abspath(__file__))
-MODULE_NAME = os.path.basename(MODULE_PATH)
-UI_PATH = os.path.join(MODULE_PATH, 'ui', 'connector.ui')
 
+class Connector(object):
 
-def send_command(command):
-    """
-    Send python command to opened maya command port
-
-    :param command: str. full command in python
-    """
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(COMMAND_ADDR)
-    # this resolves the mixed quotation conflicts
-    command = 'python("' + command.replace(r'"', r'\"') + '")'
-
-    client.send(command)
-    client.close()
-
-
-def open_stream():
-    """
-    Send command to Maya to open output streaming
-    """
-    command = r"import sys; " \
-              r"sys.path.append('{}'); " \
-              r"from {} import streamer; " \
-              r"streamer.open_stream()".format(MODULE_PATH, MODULE_NAME)
-    send_command(command)
-
-
-def close_stream():
-    """
-    Send command to Maya to close output streaming
-    """
-    command = "streamer.close_stream()"
-    send_command(command)
-
-
-class MayaConnector(QtWidgets.QMainWindow):
-    """
-    Maya Connector Main Interface
-    """
-    server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    server.bind(ADDR)
-
-    listen_thread = None
-    is_running = False
-
-    def __init__(self, parent=None):
+    def __init__(self):
         """
         Initialization
         """
-        super(MayaConnector, self).__init__(parent)
-        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        _loadUi(UI_PATH, self)
+        self.is_running = False
 
-        self.ui_connect_btn.clicked.connect(self.handle_connect)
-        self.ui_disconnect_btn.clicked.connect(self.handle_disconnect)
-        self.ui_run_all_btn.clicked.connect(self.execute)
-
-    def closeEvent(self, event):
+    def cleanup(self):
         """
-        Override: perform clean-up: remove callback, close server, end thread
+        Perform clean-up operation
         """
         self.handle_disconnect()
-        self.server.close()
-        super(MayaConnector, self).closeEvent(event)
-
-    def execute(self):
-        """
-        Send command in script area for maya to execute
-        """
-        command = self.ui_script_edit.toPlainText()
-        command = str(command).encode("string-escape")
-        send_command(command)
 
     def handle_connect(self):
         """
-        Open listen server on new thread to connect to Maya's streaming port
+        Open listen server on new thread to connect to client's streaming port
         """
         self.is_running = True
-        self.listen_thread = threading.Thread(target=self.start_listen)
-        self.listen_thread.start()
-        open_stream()
+        listen_thread = threading.Thread(target=self.start_listen)
+        listen_thread.start()
+        util.open_stream()
 
     def handle_disconnect(self):
         """
-        Close listen server thread connecting to Maya's streaming port
+        Close listen server thread connecting to client's streaming port
         """
         if self.is_running:
             self.is_running = False
-            close_stream()
+            util.close_stream()
             print('Connector no longer listening')
 
     def start_listen(self):
         """
-        Start listening to Maya's streaming port and display the return message
+        Start listening to client streaming port and display the return message
         """
         print("Connector up and listening")
+        server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        server.bind(ADDR)
         while True:
             if not self.is_running:
+                # close thread
                 break
-            data = self.server.recvfrom(1024)
+
+            data = server.recvfrom(1024)
             message = data[0]
-            # don't send message to client as it will cause infinite loop
-            self.ui_log_edit.insertPlainText(message)
-            scroll = self.ui_log_edit.verticalScrollBar()
-            scroll.setValue(scroll.maximum())
+            print(message)
 
-
-if __name__ == '__main__':
-    app = QtWidgets.QApplication(sys.argv)
-
-    win = MayaConnector()
-    win.show()
-    sys.exit(app.exec_())
+        server.close()
