@@ -17,7 +17,7 @@ import os
 import socket
 import sys
 
-from Qt import QtWidgets, QtCore
+from Qt import QtWidgets, QtCore, QtGui
 from Qt import _loadUi
 
 import listener
@@ -51,6 +51,14 @@ class MayaConnector(QtWidgets.QMainWindow, listener.Connector):
         listener.Connector.__init__(self)
 
         highlight = highlighter.PythonHighlighter(self.ui_script_edit.document())
+
+        self.ui_run_all_btn.setIcon(QtGui.QIcon(":/executeAll.png"))
+        self.ui_run_sel_btn.setIcon(QtGui.QIcon(":/execute.png"))
+        self.ui_connect_btn.setIcon(QtGui.QIcon(":/connect.png"))
+        self.ui_disconnect_btn.setIcon(QtGui.QIcon(":/disconnect.png"))
+        self.ui_clear_log_btn.setIcon(QtGui.QIcon(":/clearHistory.png"))
+        self.ui_clear_script_btn.setIcon(QtGui.QIcon(":/clearInput.png"))
+        self.ui_clear_both_btn.setIcon(QtGui.QIcon(":/clearAll.png"))
 
         self.ui_connect_btn.clicked.connect(self.handle_connect)
         self.ui_disconnect_btn.clicked.connect(self.handle_disconnect)
@@ -107,6 +115,8 @@ class MayaConnector(QtWidgets.QMainWindow, listener.Connector):
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
+    QtCore.QResource.registerResource(
+        os.path.join(MODULE_PATH, "icons", "icons.rcc"))
 
     global win
     win = MayaConnector()

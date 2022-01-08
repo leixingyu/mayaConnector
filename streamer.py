@@ -10,7 +10,7 @@ from cStringIO import StringIO
 import maya.OpenMaya as om
 
 
-SERVER = '127.0.0.1'
+SERVER = "127.0.0.1"
 PORT = 5051
 
 
