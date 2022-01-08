@@ -22,6 +22,7 @@ from Qt import _loadUi
 
 import listener
 import util
+import highlighter
 
 
 PORT = 5051
@@ -37,6 +38,7 @@ class MayaConnector(QtWidgets.QMainWindow, listener.Connector):
     """
     Maya Connector Main Interface
     """
+    message_received = QtCore.Signal(str)
 
     def __init__(self, parent=None):
         """
@@ -48,9 +50,13 @@ class MayaConnector(QtWidgets.QMainWindow, listener.Connector):
 
         listener.Connector.__init__(self)
 
+        highlight = highlighter.PythonHighlighter(self.ui_script_edit.document())
+
         self.ui_connect_btn.clicked.connect(self.handle_connect)
         self.ui_disconnect_btn.clicked.connect(self.handle_disconnect)
         self.ui_run_all_btn.clicked.connect(self.execute)
+
+        self.message_received.connect(self.update_logger)
 
     def closeEvent(self, event):
         """
@@ -69,7 +75,7 @@ class MayaConnector(QtWidgets.QMainWindow, listener.Connector):
 
     def start_listen(self):
         """
-        Start listening to Maya's streaming port and display the return message
+        Override: Listening to Maya's streaming port and emit update ui signal
         """
         print("Connector up and listening")
         server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -83,12 +89,20 @@ class MayaConnector(QtWidgets.QMainWindow, listener.Connector):
             message = data[0]
 
             # don't send message to client as it will cause infinite loop
-            # FIXME: the gui update currently will randomly crash
-            self.ui_log_edit.insertPlainText(message)
-            scroll = self.ui_log_edit.verticalScrollBar()
-            scroll.setValue(scroll.maximum())
+            # use signal to sync result logging, this avoid crashes
+            self.message_recieved.emit(message)
 
         server.close()
+
+    def update_logger(self, message):
+        """
+        Update ui field with messages
+
+        :param message: str. text to update the logger filed
+        """
+        self.ui_log_edit.insertPlainText(message)
+        scroll = self.ui_log_edit.verticalScrollBar()
+        scroll.setValue(scroll.maximum())
 
 
 if __name__ == '__main__':
