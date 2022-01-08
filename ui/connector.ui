@@ -34,10 +34,6 @@
            <property name="text">
             <string/>
            </property>
-           <property name="icon">
-            <iconset>
-             <normaloff>../icons/executeAll.png</normaloff>../icons/executeAll.png</iconset>
-           </property>
            <property name="iconSize">
             <size>
              <width>25</width>
@@ -53,10 +49,6 @@
           <widget class="QPushButton" name="ui_run_sel_btn">
            <property name="text">
             <string/>
-           </property>
-           <property name="icon">
-            <iconset>
-             <normaloff>icons/execute.png</normaloff>icons/execute.png</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -81,10 +73,6 @@
            <property name="text">
             <string/>
            </property>
-           <property name="icon">
-            <iconset>
-             <normaloff>icons/connect.png</normaloff>icons/connect.png</iconset>
-           </property>
            <property name="iconSize">
             <size>
              <width>25</width>
@@ -100,10 +88,6 @@
           <widget class="QPushButton" name="ui_disconnect_btn">
            <property name="text">
             <string/>
-           </property>
-           <property name="icon">
-            <iconset>
-             <normaloff>icons/disconnect.png</normaloff>icons/disconnect.png</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -128,10 +112,6 @@
            <property name="text">
             <string/>
            </property>
-           <property name="icon">
-            <iconset>
-             <normaloff>icons/clearHistory.png</normaloff>icons/clearHistory.png</iconset>
-           </property>
            <property name="iconSize">
             <size>
              <width>25</width>
@@ -148,10 +128,6 @@
            <property name="text">
             <string/>
            </property>
-           <property name="icon">
-            <iconset>
-             <normaloff>icons/clearInput.png</normaloff>icons/clearInput.png</iconset>
-           </property>
            <property name="iconSize">
             <size>
              <width>25</width>
@@ -167,10 +143,6 @@
           <widget class="QPushButton" name="ui_clear_both_btn">
            <property name="text">
             <string/>
-           </property>
-           <property name="icon">
-            <iconset>
-             <normaloff>icons/clearAll.png</normaloff>icons/clearAll.png</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -202,7 +174,7 @@
         <widget class="QPlainTextEdit" name="ui_log_edit">
          <property name="font">
           <font>
-           <family>Bahnschrift</family>
+           <family>Courier New</family>
            <pointsize>10</pointsize>
           </font>
          </property>
@@ -245,6 +217,11 @@
            </property>
            <item>
             <widget class="QPlainTextEdit" name="ui_script_edit">
+             <property name="font">
+              <font>
+               <family>Courier New</family>
+              </font>
+             </property>
              <property name="tabStopWidth">
               <number>20</number>
              </property>
@@ -283,7 +260,6 @@
    </widget>
    <addaction name="menuFile"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
   <action name="actionSave_as">
    <property name="text">
     <string>Save as...</string>
