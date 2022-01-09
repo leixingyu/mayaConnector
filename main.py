@@ -22,7 +22,8 @@ from Qt import _loadUi
 
 import listener
 import util
-import highlighter
+from codeEditor import codeEditor
+from codeEditor.highlighter import pyHighlight
 
 
 PORT = 5051
@@ -50,7 +51,9 @@ class MayaConnector(QtWidgets.QMainWindow, listener.Connector):
 
         listener.Connector.__init__(self)
 
-        highlight = highlighter.PythonHighlighter(self.ui_script_edit.document())
+        self.ui_script_edit = codeEditor.CodeEditor()
+        self.ui_python_layout.addWidget(self.ui_script_edit)
+        highlight = pyHighlight.PythonHighlighter(self.ui_script_edit.document())
 
         self.ui_run_all_btn.setIcon(QtGui.QIcon(":/executeAll.png"))
         self.ui_run_sel_btn.setIcon(QtGui.QIcon(":/execute.png"))
@@ -98,7 +101,7 @@ class MayaConnector(QtWidgets.QMainWindow, listener.Connector):
 
             # don't send message to client as it will cause infinite loop
             # use signal to sync result logging, this avoid crashes
-            self.message_recieved.emit(message)
+            self.message_received.emit(message)
 
         server.close()
 
