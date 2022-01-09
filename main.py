@@ -66,6 +66,12 @@ class MayaConnector(QtWidgets.QMainWindow, listener.Connector):
         self.ui_connect_btn.clicked.connect(self.handle_connect)
         self.ui_disconnect_btn.clicked.connect(self.handle_disconnect)
         self.ui_run_all_btn.clicked.connect(self.execute)
+        self.ui_run_sel_btn.clicked.connect(self.execute_sel)
+        self.ui_clear_log_btn.clicked.connect(self.clear_log)
+        self.ui_clear_script_btn.clicked.connect(self.clear_script)
+        self.ui_clear_both_btn.clicked.connect(self.clear_all)
+        self.ui_save_action.triggered.connect(self.save_script)
+        self.ui_open_action.triggered.connect(self.open_script)
 
         self.message_received.connect(self.update_logger)
 
@@ -78,9 +84,17 @@ class MayaConnector(QtWidgets.QMainWindow, listener.Connector):
 
     def execute(self):
         """
-        Send command in script area for maya to execute
+        Send all command in script area for maya to execute
         """
         command = self.ui_script_edit.toPlainText()
+        command = str(command).encode("string-escape")
+        util.send_command(command)
+
+    def execute_sel(self):
+        """
+        Send selected command in script area for maya to execute
+        """
+        command = self.ui_script_edit.textCursor().selection().toPlainText()
         command = str(command).encode("string-escape")
         util.send_command(command)
 
@@ -114,6 +128,59 @@ class MayaConnector(QtWidgets.QMainWindow, listener.Connector):
         self.ui_log_edit.insertPlainText(message)
         scroll = self.ui_log_edit.verticalScrollBar()
         scroll.setValue(scroll.maximum())
+
+    def clear_script(self):
+        """
+        Clear script edit area
+        """
+        self.ui_script_edit.clear()
+
+    def clear_log(self):
+        """
+        Clear history logging area
+        """
+        self.ui_log_edit.clear()
+
+    def clear_all(self):
+        """
+        Clear both script edit area and history logging area
+        """
+        self.clear_log()
+        self.clear_script()
+
+    def open_script(self):
+        """
+        Open python file to script edit area
+        """
+        path = QtWidgets.QFileDialog.getOpenFileName(
+            None,
+            "Open Script",
+            MODULE_PATH,
+            filter="*.py")[0]
+
+        if not path:
+            return
+
+        with open(path, 'r') as f:
+            output = f.read()
+            self.ui_script_edit.setPlainText(output)
+
+    def save_script(self):
+        """
+        Save script edit area as a python file
+        """
+        path = QtWidgets.QFileDialog.getSaveFileName(
+            None,
+            "Save Script As...",
+            MODULE_PATH,
+            filter="*.py")[0]
+
+        if not path:
+            return
+
+        command = self.ui_script_edit.toPlainText()
+        with open(path, 'w') as f:
+            f.write(command)
 
 
 if __name__ == '__main__':
