@@ -61,7 +61,24 @@ def stream_to_console(msg, mtype, addr):
     buf = StringIO()
     buf.seek(0)
     buf.truncate()
-    buf.write(msg)
+
+    if mtype == om.MCommandMessage.kWarning:
+        buf.write('# Warning: ')
+        buf.write(msg)
+        buf.write(' #\n')
+
+    elif mtype == om.MCommandMessage.kError:
+        buf.write('// Error: ')
+        buf.write(msg)
+        buf.write(' //\n')
+
+    elif mtype == om.MCommandMessage.kResult:
+        buf.write('# Result: ')
+        buf.write(msg)
+        buf.write(' #\n')
+    else:
+        buf.write(msg)
+
     buf.seek(0)
     buf_size = 8*1024
     while True:
