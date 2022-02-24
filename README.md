@@ -29,6 +29,19 @@ This tool has two major components:
 
 ## Getting Started
 
+### Prerequisites
+
+- [Qt](https://github.com/mottosso/Qt.py): a module that supports different
+python qt bindings
+
+   or alternatively, change the code below to whatever qt binding you have on your machine.
+   ```python
+   from Qt import QtWidgets, QtCore, QtGui
+   from Qt import _loadUi
+   ```
+
+### Launch
+
 1. Unzip the **maya-connector** package
 
 2. Launch Maya and open port `5050`:
